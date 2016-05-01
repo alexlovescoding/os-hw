@@ -2,7 +2,7 @@ package main
 
 import (
   "fmt"
-  "./modules"
+  "github.com/alexlovescoding/os-hw/modules"
   "strconv"
 )
 
