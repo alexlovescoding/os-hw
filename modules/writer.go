@@ -1,20 +1,37 @@
 package modules
 
-import "io/ioutil"
+import (
+  "fmt"
+  "sync"
+)
 
 type Writer struct {
   id int
-  filename string
-  read chan bool
-  write chan bool
+  res *Mutex
+  read *int
+  write *int
   priority string
+  wg *sync.WaitGroup
 }
 
-func Writer(id int, filename string, read chan bool, write chan bool, priority string) Reader {
-  p := Reader{id: id, filename: filename, read: read, write: write, priority: priority}
-  return p
+func NewWriter(id int, res *Mutex, read, write *int, priority string, wg *sync.WaitGroup) Writer {
+  w := Writer{id: id, res: res, read: read, write: write, priority: priority, wg: wg}
+  return w
 }
 
-func (p Process) Read() {
+func (w Writer) Write() {
+  fmt.Printf("Writer %d entering non-critical.\n", w.id)
+  if w.priority == "read" {
+    for *w.read > 0 {}
+  }
 
+  *w.write++
+  w.res.Lock()
+  fmt.Printf("Writer %d entering critical.\n", w.id)
+  data := fmt.Sprintf("Writer #%d\n", w.id)
+  w.res.File.WriteString(data)
+  fmt.Printf("Writer %d leaving critical.\n", w.id)
+  w.res.Unlock()
+  *w.write--
+  w.wg.Done()
 }

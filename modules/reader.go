@@ -1,22 +1,38 @@
 package modules
 
-import "io/ioutil"
+import (
+  "fmt"
+  "io/ioutil"
+  "sync"
+)
 
 type Reader struct {
   id int
-  filename string
-  read chan bool
-  write chan bool
+  res *Mutex
+  read *int
+  write *int
   priority string
+  wg *sync.WaitGroup
 }
 
-func NewReader(id int, filename string, read chan bool, write chan bool, priority string) Reader {
-  p := Reader{id: id, filename: filename, read: read, write: write, priority: priority}
-  return p
+func NewReader(id int, res *Mutex, read, write *int, priority string, wg *sync.WaitGroup) Reader {
+  r := Reader{id: id, res: res, read: read, write: write, priority: priority, wg: wg}
+  return r
 }
 
-func (p Reader) Read() {
-  p.read <- true
-  time.Sleep(time.Duration(rand.Int31n(1000)) * time.Millisecond)
-  <- p.read
+func (r Reader) Read() {
+  fmt.Printf("Reader %d entering non-critical.\n", r.id)
+  if r.priority == "write" {
+    for *r.write > 0 {}
+  }
+
+  *r.read++
+  r.res.RLock()
+  fmt.Printf("Reader %d entering critical.\n", r.id)
+  data, _ := ioutil.ReadFile(r.res.File.Name())
+  fmt.Print(string(data))
+  fmt.Printf("Reader %d leaving critical.\n", r.id)
+  r.res.RUnlock()
+  *r.read--
+  r.wg.Done()
 }
