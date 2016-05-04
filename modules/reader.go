@@ -29,8 +29,10 @@ func (r Reader) Read() {
   *r.read++
   r.res.RLock()
   fmt.Printf("Reader %d entering critical.\n", r.id)
-  data, _ := ioutil.ReadFile(r.res.File.Name())
-  fmt.Print(string(data))
+  _, err := ioutil.ReadFile(r.res.File.Name())
+  if err != nil {
+    panic(err)
+  }
   fmt.Printf("Reader %d leaving critical.\n", r.id)
   r.res.RUnlock()
   *r.read--
