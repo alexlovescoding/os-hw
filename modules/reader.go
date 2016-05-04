@@ -22,11 +22,12 @@ func NewReader(id int, res *Mutex, read, write *int, priority string, wg *sync.W
 
 func (r Reader) Read() {
   fmt.Printf("Reader %d entering non-critical.\n", r.id)
+
+  *r.read++
   if r.priority == "write" {
     for *r.write > 0 {}
   }
 
-  *r.read++
   r.res.RLock()
   fmt.Printf("Reader %d entering critical.\n", r.id)
   _, err := ioutil.ReadFile(r.res.File.Name())

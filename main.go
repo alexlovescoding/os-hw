@@ -34,12 +34,15 @@ func main() {
   fmt.Println("Priority goes to: ")
   fmt.Println("1: Read")
   fmt.Println("2: Write")
+  fmt.Println("3: Neither")
   fmt.Scanf("%d", &optprio)
 
   if optprio == 1 {
     priority = "read"
   } else if optprio == 2 {
     priority = "write"
+  } else if optprio == 3 {
+    priority = "neither"
   } else {
     panic("Please enter either 1 or 2")
   }
